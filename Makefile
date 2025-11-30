@@ -6,19 +6,22 @@ TARGET_TINYGO = embedfire-py32f030
 TARGET_PYOCD = py32f030x8
 CMSIS_PACK = PY32F030
 
+IMAGE=image.elf
 
 build:
-	tinygo build --size html --serial uart --scheduler tasks --gc leaking --target ${TARGET_TINYGO} -o py32.elf blinky3.go
-	arm-none-eabi-objdump -dS py32.elf > py32.S
+	tinygo build --size html --serial uart --scheduler tasks --gc leaking --target ${TARGET_TINYGO} -o ${IMAGE} blinky3.go
 
 flash: build
-	pyocd load -t ${TARGET_PYOCD} py32.elf
+	pyocd load -t ${TARGET_PYOCD} ${IMAGE}
 
 gdb:
 	pyocd gdb --target ${TARGET_PYOCD} --semihosting --persist
 
+rtt:
+	pyocd rtt -t ${TARGET_PYOCD}
+
 install-pack:
 	pyocd pack install ${CMSIS_PACK}
 
-rtt:
-	pyocd rtt -t ${TARGET_PYOCD}
+disassembly: build
+	arm-none-eabi-objdump -dS ${IMAGE} > disassembly.txt
